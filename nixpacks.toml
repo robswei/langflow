@@ -1,0 +1,8 @@
+[phases.setup]
+nixPkgs = ['...', 'nodejs']
+
+[phases.build]
+cmds = ['make install_frontendci && make build_frontend']
+
+[start]
+cmd = 'python -m langflow run --host 0.0.0.0 --port $PORT --log-level ${LOGLEVEL:-debug}'
