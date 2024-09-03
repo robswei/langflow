@@ -122,10 +122,11 @@ jobs:
       - name: Build and push Docker
         uses: iloveitaly/github-action-nixpacks@main
         with:
-          context: .
           push: true
           tags: ${{ needs.setup.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          env: |
+            NIXPACKS_CONFIG_FILE=nixpacks.toml
+
       # - name: Build and Push Docker Image
       #   uses: docker/build-push-action@v6
       #   with:
