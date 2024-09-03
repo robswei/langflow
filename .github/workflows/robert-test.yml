@@ -31,6 +31,7 @@ on:
 env:
   POETRY_VERSION: "1.8.2"
   TEST_TAG: "robswei/langflow:test"
+  REGISTRY: ghcr.io
 
 jobs:
   get-version:
@@ -94,11 +95,30 @@ jobs:
       - uses: actions/checkout@v4
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - name: Login to Docker Hub
+      - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.actor }}/langflow
+          tags: |
+            type=ref,event=branch
+            type=sha
+            latest
+          labels: |
+            org.opencontainers.image.title=robswei Langflow
+            org.opencontainers.image.description=Container image for langflow
+            org.opencontainers.image.url=https://github.com/${{ github.repository }}
+            org.opencontainers.image.authors=Robert Weiner
+            org.opencontainers.image.version={{version}}
+            org.opencontainers.image.created={{date 'yyyy-MM-dd'}}
+            org.opencontainers.image.revision={{sha}}
+            org.opencontainers.image.licenses=MIT
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6
         with:
@@ -106,6 +126,7 @@ jobs:
           push: true
           file: ${{ needs.setup.outputs.file }}
           tags: ${{ needs.setup.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           # provenance: false will result in a single manifest for all platforms which makes the image pullable from arm64 machines via the emulation (e.g. Apple Silicon machines)
           provenance: false
 
@@ -127,11 +148,12 @@ jobs:
       - uses: actions/checkout@v4
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - name: Login to Docker Hub
+      - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Wait for Docker Hub to propagate (for backend)
         run: sleep 120
       - name: Build and push ${{ matrix.component }}
