@@ -123,7 +123,6 @@ jobs:
         uses: iloveitaly/github-action-nixpacks@v1.0
         with:
           context: .
-          platforms: "linux/amd64,linux/arm64"
           push: true
           tags: ${{ needs.setup.outputs.tags }}
           env: |
